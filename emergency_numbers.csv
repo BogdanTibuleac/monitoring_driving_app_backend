@@ -1,0 +1,65 @@
+country_code,country_name,ambulance_number
+AL,Albania,127
+AD,Andorra,112
+AT,Austria,144
+BY,Belarus,103
+BE,Belgium,100
+BA,Bosnia and Herzegovina,124
+BG,Bulgaria,112
+HR,Croatia,194
+CY,Cyprus,112
+CZ,Czechia,155
+DK,Denmark,112
+EE,Estonia,112
+FI,Finland,112
+FR,France,15
+DE,Germany,112
+GR,Greece,166
+HU,Hungary,104
+IS,Iceland,112
+IE,Ireland,112
+IT,Italy,118
+LV,Latvia,113
+LT,Lithuania,112
+LU,Luxembourg,112
+MT,Malta,112
+MD,Moldova,112
+MC,Monaco,15
+ME,Montenegro,124
+NL,Netherlands,112
+NO,Norway,113
+PL,Poland,999
+PT,Portugal,112
+RO,Romania,112
+RU,Russia,103
+RS,Serbia,194
+SK,Slovakia,155
+SI,Slovenia,112
+ES,Spain,061
+SE,Sweden,112
+CH,Switzerland,144
+TR,Turkey,112
+UA,Ukraine,103
+GB,United Kingdom,999
+US,United States,911
+CA,Canada,911
+MX,Mexico,911
+BR,Brazil,192
+AR,Argentina,107
+AU,Australia,000
+NZ,New Zealand,111
+JP,Japan,119
+CN,China,120
+IN,India,102
+ZA,South Africa,10177
+SA,Saudi Arabia,997
+AE,United Arab Emirates,998
+KR,South Korea,119
+SG,Singapore,995
+MY,Malaysia,999
+TH,Thailand,1669
+PH,Philippines,911
+VN,Vietnam,115
+IL,Israel,101
+HK,Hong Kong,999
+TW,Taiwan,119
