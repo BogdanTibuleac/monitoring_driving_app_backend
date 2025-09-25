@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware  # 👈 add this import
+
 from app.api import api_router
 from app.core.database import get_db_provider
 
@@ -16,6 +18,15 @@ app = FastAPI(
     title="FastAPI Template Backend",
     version="0.1.0",
     lifespan=lifespan
+)
+
+# 👇 CORS middleware goes here
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3001", "http://127.0.0.1:3001"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

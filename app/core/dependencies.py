@@ -8,7 +8,9 @@ from app.services.vehicle_service import VehicleService
 from app.services.trip_service import TripService
 from app.services.sos_service import SOSService
 from app.services.gamification_service import GamificationService
-
+from app.services.emergency_service import EmergencyService
+from app.services.driver_profile_service import DriverProfileService
+from app.services.analytics_service import AnalyticsService
 
 # --------------------------------------------------------------------
 # Cached / singleton-style dependencies
@@ -86,3 +88,22 @@ async def get_gamification_service():
     session_factory = db_provider.get_session_factory()
     async with session_factory() as session:
         yield GamificationService(session)
+
+async def get_emergency_service():
+    db_provider = get_db_provider()
+    session_factory = db_provider.get_session_factory()
+    async with session_factory() as session:
+        yield EmergencyService(session)
+        
+
+async def get_driver_profile_service():
+    db_provider = get_db_provider()
+    session_factory = db_provider.get_session_factory()
+    async with session_factory() as session:
+        yield DriverProfileService(session)
+
+async def get_analytics_service():
+    db_provider = get_db_provider()
+    session_factory = db_provider.get_session_factory()
+    async with session_factory() as session:
+        yield AnalyticsService(session)
