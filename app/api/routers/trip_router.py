@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Optional
 from datetime import datetime
+from datetime import date
 from app.services.trip_service import TripService
 from app.core.dependencies import get_trip_service
 from app.data.schemas.models import FactTrip
@@ -10,14 +11,32 @@ router = APIRouter(prefix="/trips", tags=["trips"])
 
 
 # -------------------------
-# Schemas for dashbaord driver info
+# Schemas for dashbaord driver info, Trip with Locations for joining tables
 # -------------------------
 class TripSummary(SQLModel):
     total_trips: int
     avg_safety_score: float
     avg_eco_score: float
 
+class TripWithLocations(SQLModel):
+    trip_id: int
+    driver_id: int
+    vehicle_id: int
+    distance_km: Optional[float]
+    avg_speed: Optional[float]
+    harsh_events: Optional[int]
+    eco_score: Optional[float]
+    safety_score: Optional[float]
+    trip_duration_sec: Optional[int]
+    max_speed: Optional[float]
+    date:  Optional[date]
+    origin_name: Optional[str]
+    destination_name: Optional[str]
 
+class WeeklyTrend(SQLModel):
+    weekday: int
+    avg_safety: Optional[float]
+    avg_eco: Optional[float]
 # -------------------------
 # Routes
 # -------------------------
@@ -76,15 +95,7 @@ async def delete_trip(trip_id: int, trip_service: TripService = Depends(get_trip
     return None
 
 
-@router.get("/driver/{driver_id}", response_model=List[FactTrip])
-async def get_trips_for_driver(
-    driver_id: int,
-    trip_service: TripService = Depends(get_trip_service)
-):
-    return await trip_service.get_trips_by_driver(driver_id)
-
-
-@router.get("/driver/{driver_id}", response_model=List[FactTrip])
+@router.get("/driver/{driver_id}", response_model=List[TripWithLocations])
 async def get_trips_for_driver(
     driver_id: int,
     trip_service: TripService = Depends(get_trip_service)
@@ -98,3 +109,10 @@ async def get_trips_summary_for_driver(
     trip_service: TripService = Depends(get_trip_service)
 ):
     return await trip_service.get_trips_summary_by_driver(driver_id)
+
+@router.get("/analytics/driver/{driver_id}/weekly", response_model=List[WeeklyTrend])
+async def get_weekly_trends_for_driver(
+    driver_id: int,
+    trip_service: TripService = Depends(get_trip_service)
+):
+    return await trip_service.get_weekly_trends(driver_id)

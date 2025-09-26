@@ -1,8 +1,8 @@
-#driver_service.py
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from app.data.schemas.models import Driver
+from datetime import date
 
 
 class DriverService:
@@ -25,14 +25,22 @@ class DriverService:
         license_type: Optional[str] = None,
         email: Optional[str] = None,
         phone: Optional[str] = None,
-        date_of_birth: Optional[str] = None,  # can be date type if validated earlier
+        date_of_birth: Optional[str] = None,  # can be str or date
     ) -> Driver:
+        # convert to date if passed as string
+        dob = None
+        if date_of_birth:
+            if isinstance(date_of_birth, str):
+                dob = date.fromisoformat(date_of_birth)
+            else:
+                dob = date_of_birth
+
         driver = Driver(
             name=name,
             license_type=license_type,
             email=email,
             phone=phone,
-            date_of_birth=date_of_birth,
+            date_of_birth=dob,
         )
         self.session.add(driver)
         await self.session.commit()
@@ -46,9 +54,14 @@ class DriverService:
         if not driver:
             return None
 
-        # only update fields that exist on the model
         for k, v in updates.items():
             if hasattr(driver, k):
+                # convert date_of_birth if it's a string
+                if k == "date_of_birth" and isinstance(v, str):
+                    try:
+                        v = date.fromisoformat(v)
+                    except ValueError:
+                        continue  # skip invalid dates
                 setattr(driver, k, v)
 
         self.session.add(driver)

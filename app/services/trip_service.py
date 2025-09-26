@@ -1,10 +1,11 @@
-#trip_service.py
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from datetime import datetime
-from app.data.schemas.models import FactTrip, Time
 from sqlalchemy import func
+from sqlalchemy.orm import aliased
+
+from app.data.schemas.models import FactTrip, Location, Time
 
 
 class TripService:
@@ -36,9 +37,9 @@ class TripService:
     ) -> FactTrip:
         """Insert trip and auto-manage time dimension entry."""
         ts = timestamp or datetime.utcnow()
-        # Create or reuse time_id
+        # ✅ use date_value instead of date
         time_stmt = select(Time).where(
-            Time.date == ts.date(),
+            Time.date_value == ts.date(),
             Time.year == ts.year,
             Time.month == ts.month,
             Time.day == ts.day,
@@ -50,7 +51,7 @@ class TripService:
 
         if not time_row:
             time_row = Time(
-                date=ts.date(),
+                date_value=ts.date(),
                 year=ts.year,
                 month=ts.month,
                 day=ts.day,
@@ -87,11 +88,6 @@ class TripService:
         await self.session.delete(trip)
         await self.session.commit()
         return True
-    
-    async def get_trips_by_driver(self, driver_id: int, limit: int = 100) -> List[FactTrip]:
-        stmt = select(FactTrip).where(FactTrip.driver_id == driver_id).limit(limit)
-        result = await self.session.execute(stmt)
-        return result.scalars().all()
 
     async def get_trips_summary_by_driver(self, driver_id: int):
         stmt = (
@@ -108,6 +104,50 @@ class TripService:
             "total_trips": row.total_trips or 0,
             "avg_safety_score": round(row.avg_safety_score or 0, 2),
             "avg_eco_score": round(row.avg_eco_score or 0, 2),
-    }
+        }
 
+    async def get_trips_by_driver(self, driver_id: int):
+        origin = aliased(Location)
+        destination = aliased(Location)
+
+        stmt = (
+            select(
+                FactTrip.trip_id,
+                FactTrip.driver_id,
+                FactTrip.vehicle_id,
+                FactTrip.distance_km,
+                FactTrip.avg_speed,
+                FactTrip.harsh_events,
+                FactTrip.eco_score,
+                FactTrip.safety_score,
+                FactTrip.trip_duration_sec,
+                FactTrip.max_speed,
+                Time.date_value.label("date"),
+                origin.location_name.label("origin_name"),
+                destination.location_name.label("destination_name"),
+            )
+            .join(Time, FactTrip.time_id == Time.time_id)
+            # ✅ make joins outer to avoid dropping rows
+            .join(origin, FactTrip.origin_location_id == origin.location_id, isouter=True)
+            .join(destination, FactTrip.destination_location_id == destination.location_id, isouter=True)
+            .where(FactTrip.driver_id == driver_id)
+        )
+
+        result = await self.session.execute(stmt)
+        return [dict(row._mapping) for row in result.all()]
+    
+    async def get_weekly_trends(self, driver_id: int):
+        stmt = (
+            select(
+                Time.weekday,
+                func.avg(FactTrip.safety_score).label("avg_safety"),
+                func.avg(FactTrip.eco_score).label("avg_eco"),
+            )
+            .join(Time, FactTrip.time_id == Time.time_id)
+            .where(FactTrip.driver_id == driver_id)
+            .group_by(Time.weekday)
+            .order_by(Time.weekday)
+        )
+        result = await self.session.execute(stmt)
+        return [dict(row._mapping) for row in result.all()]
 

@@ -75,6 +75,7 @@ class Location(SQLModel, table=True):
     longitude: float
     city: Optional[str] = Field(default=None, max_length=50)
     road_type: Optional[str] = Field(default=None, max_length=30)
+    location_name: Optional[str] = Field(default=None, max_length=100)  # 👈 new
 
 
 class Badge(SQLModel, table=True):
@@ -157,12 +158,16 @@ class FactSOS(SQLModel, table=True):
     resolved: Optional[bool] = None
 
 
+
 class FactTrip(SQLModel, table=True):
     __tablename__ = "fact_trip"
     trip_id: Optional[int] = Field(default=None, primary_key=True)
     driver_id: int = Field(foreign_key="dim_driver.driver_id", nullable=False)
     vehicle_id: int = Field(foreign_key="dim_vehicle.vehicle_id", nullable=False)
     time_id: int = Field(foreign_key="dim_time.time_id", nullable=False)
+
+    origin_location_id: Optional[int] = Field(default=None, foreign_key="dim_location.location_id")  # 👈 new
+    destination_location_id: Optional[int] = Field(default=None, foreign_key="dim_location.location_id")  # 👈 new
 
     distance_km: Optional[float] = None
     avg_speed: Optional[float] = None
@@ -171,7 +176,6 @@ class FactTrip(SQLModel, table=True):
     safety_score: Optional[float] = None
     trip_duration_sec: Optional[int] = None
     max_speed: Optional[float] = None
-
 
 class FactGamification(SQLModel, table=True):
     __tablename__ = "fact_gamification"

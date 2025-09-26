@@ -32,7 +32,7 @@ async def get_medical(driver_id: int, service: DriverProfileService = Depends(ge
     return med
 
 
-@router.post("/medical", response_model=Medical, status_code=201)
+@router.patch("/medical", response_model=Medical, status_code=201)
 async def upsert_medical(driver_id: int, data: dict, service: DriverProfileService = Depends(get_driver_profile_service)):
     return await service.upsert_medical(driver_id, data)
 
