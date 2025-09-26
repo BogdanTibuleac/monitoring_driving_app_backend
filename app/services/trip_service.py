@@ -1,8 +1,10 @@
+#trip_service.py
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from datetime import datetime
 from app.data.schemas.models import FactTrip, Time
+from sqlalchemy import func
 
 
 class TripService:
@@ -85,3 +87,27 @@ class TripService:
         await self.session.delete(trip)
         await self.session.commit()
         return True
+    
+    async def get_trips_by_driver(self, driver_id: int, limit: int = 100) -> List[FactTrip]:
+        stmt = select(FactTrip).where(FactTrip.driver_id == driver_id).limit(limit)
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
+
+    async def get_trips_summary_by_driver(self, driver_id: int):
+        stmt = (
+            select(
+                func.count(FactTrip.trip_id).label("total_trips"),
+                func.avg(FactTrip.safety_score).label("avg_safety_score"),
+                func.avg(FactTrip.eco_score).label("avg_eco_score"),
+            )
+            .where(FactTrip.driver_id == driver_id)
+        )
+        result = await self.session.execute(stmt)
+        row = result.one()
+        return {
+            "total_trips": row.total_trips or 0,
+            "avg_safety_score": round(row.avg_safety_score or 0, 2),
+            "avg_eco_score": round(row.avg_eco_score or 0, 2),
+    }
+
+

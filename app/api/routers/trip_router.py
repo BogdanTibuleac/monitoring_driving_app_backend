@@ -4,10 +4,23 @@ from datetime import datetime
 from app.services.trip_service import TripService
 from app.core.dependencies import get_trip_service
 from app.data.schemas.models import FactTrip
+from sqlmodel import SQLModel
 
 router = APIRouter(prefix="/trips", tags=["trips"])
 
 
+# -------------------------
+# Schemas for dashbaord driver info
+# -------------------------
+class TripSummary(SQLModel):
+    total_trips: int
+    avg_safety_score: float
+    avg_eco_score: float
+
+
+# -------------------------
+# Routes
+# -------------------------
 @router.get("/", response_model=List[FactTrip])
 async def list_trips(trip_service: TripService = Depends(get_trip_service)):
     try:
@@ -61,3 +74,27 @@ async def delete_trip(trip_id: int, trip_service: TripService = Depends(get_trip
     if not success:
         raise HTTPException(status_code=404, detail="Trip not found")
     return None
+
+
+@router.get("/driver/{driver_id}", response_model=List[FactTrip])
+async def get_trips_for_driver(
+    driver_id: int,
+    trip_service: TripService = Depends(get_trip_service)
+):
+    return await trip_service.get_trips_by_driver(driver_id)
+
+
+@router.get("/driver/{driver_id}", response_model=List[FactTrip])
+async def get_trips_for_driver(
+    driver_id: int,
+    trip_service: TripService = Depends(get_trip_service)
+):
+    return await trip_service.get_trips_by_driver(driver_id)
+
+
+@router.get("/driver/{driver_id}/summary", response_model=TripSummary)
+async def get_trips_summary_for_driver(
+    driver_id: int,
+    trip_service: TripService = Depends(get_trip_service)
+):
+    return await trip_service.get_trips_summary_by_driver(driver_id)

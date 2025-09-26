@@ -20,6 +20,9 @@ class Driver(SQLModel, table=True):
     driver_id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(max_length=100, nullable=False)
     license_type: Optional[str] = Field(default=None, max_length=20)
+    email: Optional[str] = Field(default=None, max_length=20)
+    phone: Optional[str] = Field(default=None, max_length=20)
+
     date_of_birth: Optional[date] = None
 
 

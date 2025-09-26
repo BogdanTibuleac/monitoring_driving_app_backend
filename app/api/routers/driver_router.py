@@ -1,8 +1,9 @@
+#driver_router.py
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Optional
 from app.services.driver_service import DriverService
 from app.core.dependencies import get_driver_service
-from app.data.schemas.models import Driver
+from app.data.schemas.models import Driver, FactTrip
 
 router = APIRouter(prefix="/drivers", tags=["drivers"])
 
@@ -27,10 +28,19 @@ async def get_driver(driver_id: int, driver_service: DriverService = Depends(get
 async def create_driver(
     name: str,
     license_type: Optional[str] = None,
+    email: Optional[str] = None,
+    phone: Optional[str] = None,
+    date_of_birth: Optional[str] = None,   # str for now; schema can handle date
     driver_service: DriverService = Depends(get_driver_service),
 ):
     try:
-        return await driver_service.create_driver(name, license_type)
+        return await driver_service.create_driver(
+            name=name,
+            license_type=license_type,
+            email=email,
+            phone=phone,
+            date_of_birth=date_of_birth,
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create driver: {str(e)}")
 
@@ -53,3 +63,4 @@ async def delete_driver(driver_id: int, driver_service: DriverService = Depends(
     if not success:
         raise HTTPException(status_code=404, detail="Driver not found")
     return None
+

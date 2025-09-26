@@ -1,3 +1,4 @@
+#driver_service.py
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -18,8 +19,21 @@ class DriverService:
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def create_driver(self, name: str, license_type: Optional[str] = None) -> Driver:
-        driver = Driver(name=name, license_type=license_type)
+    async def create_driver(
+        self,
+        name: str,
+        license_type: Optional[str] = None,
+        email: Optional[str] = None,
+        phone: Optional[str] = None,
+        date_of_birth: Optional[str] = None,  # can be date type if validated earlier
+    ) -> Driver:
+        driver = Driver(
+            name=name,
+            license_type=license_type,
+            email=email,
+            phone=phone,
+            date_of_birth=date_of_birth,
+        )
         self.session.add(driver)
         await self.session.commit()
         await self.session.refresh(driver)
@@ -31,8 +45,12 @@ class DriverService:
         driver = result.scalar_one_or_none()
         if not driver:
             return None
+
+        # only update fields that exist on the model
         for k, v in updates.items():
-            setattr(driver, k, v)
+            if hasattr(driver, k):
+                setattr(driver, k, v)
+
         self.session.add(driver)
         await self.session.commit()
         await self.session.refresh(driver)
